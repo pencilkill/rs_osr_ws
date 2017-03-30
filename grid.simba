@@ -1,0 +1,177 @@
+(*
+Grid
+====
+
+Supporting grid functions.
+
+.. contents::
+
+*)
+
+(*
+GridColorBoxFirst
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    procedure GridColorBoxFirst;
+
+Get the first box in area
+
+.. note::
+
+    by sam
+
+Example:
+
+.. code-block:: pascal
+
+*)
+function GridColorBoxFirst(colors, tols : TIntegerArray; area: TBox) : TBox;
+var
+  tpa: TPointArray;
+  i,xe,ye :Integer;
+  b: Boolean;
+begin
+  b := false;
+  for i := area.X1 to area.X2 do
+  begin
+    tpa := ReturnTPAExceptColors(colors, tols, IntToBox(i + 1, area.Y1, i + 1, area.Y2));
+    if Length(tpa) > 0 then
+    begin
+      b := true;
+    end else
+    begin
+      if b then
+      begin
+        xe := i;
+        break;
+      end;
+    end;
+  end;
+  //
+  b := false;
+  for i := area.Y1 to area.Y2 do
+  begin
+    tpa := ReturnTPAExceptColors(colors, tols, IntToBox(area.X1, i + 1, area.X2, i + 1));
+    if Length(tpa) > 0 then
+    begin
+      b := true;
+    end else
+    begin
+      if b then
+      begin
+        ye := i;
+        break;
+      end;
+    end;
+  end;
+  result := IntToBox(area.X1, area.Y1, xe, ye);
+  //WriteLn('grid box first : ' + toStr(Result));
+end;
+
+(*
+GridColorBoxDist
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    procedure GridColorBoxDist;
+
+Get the box in area
+
+.. note::
+
+    by sam
+
+Example:
+
+.. code-block:: pascal
+
+*)
+procedure GridColorBoxDist(var dx, dy : Integer; colors, tols : TIntegerArray; area: TBox);
+var
+  tpa: TPointArray;
+  i :Integer;
+begin
+  //
+  dx := 0;
+  for i := area.X1 to area.X2 do
+  begin
+    tpa := ReturnTPAExceptColors(colors, tols, IntToBox(i + 1, area.Y1, i + 1, area.Y2));
+    if Length(tpa) > 0 then
+    begin
+      break;
+    end else
+    begin
+      dx := dx + 1;
+    end;
+  end;
+  //
+  dy := 0;
+  for i := area.Y1 to area.Y2 do
+  begin
+    tpa := ReturnTPAExceptColors(colors, tols, IntToBox(area.X1, i + 1, area.X2, i + 1));
+    if Length(tpa) > 0 then
+    begin
+      break;
+    end else
+    begin
+      dy := dy + 1;
+    end;
+  end;
+  //WriteLn('grid box dist : ' + toStr(dx) + ',' + toStr(dy));
+end;
+
+(*
+GridColorBox
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    procedure GridColorBox;
+
+Get grid box in area
+
+.. note::
+
+    by sam
+
+Example:
+
+.. code-block:: pascal
+
+*)
+function GridColorBox(cols, tols: TIntegerArray; area: TBox) : TBoxArray;
+var
+  tpa: TPointArray;
+  tb, first: TBox;
+  c, r, w, h, dx, dy:Integer;
+begin
+  tpa := ReturnTPAExceptColors(cols, tols, area);
+
+  // check for not found
+  if Length(tpa) = 0 then
+  begin
+    setLength(result, 1);
+    result[0] := area;
+    exit;
+  end;
+
+  //
+  tb := GetTPABounds(tpa);
+  first := GridColorBoxFirst(cols, tols, tb);
+  GridColorBoxDist(dx, dy, cols, tols, IntToBox(first.X2, first.Y2, tb.X2, tb.Y2));
+
+  //
+  w := first.X2 - first.X1 + 1;
+  h := first.Y2 - first.Y1 + 1;
+  dx := w + dx;
+  dy := h + dy;
+  c := Ceil((tb.X2 - tb.X1 + dx) div (dx));
+  r := Ceil((tb.Y2 - tb.Y1 + dy) div (dy));
+
+  //WriteLn('grid box : ' + toStr(c) + ',' + toStr(r) + ',' + toStr(w) + ',' + toStr(h) + ',' + toStr(dx) + ',' + toStr(dy));
+  //
+  result := Grid(c, r, w, h, dx, dy, MiddleBox(first));
+end;

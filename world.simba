@@ -1,0 +1,178 @@
+(*
+World
+====
+
+Supporting world functions.
+
+.. contents::
+
+*)
+
+type
+  TWorldColor = record
+    color, bcolor, percent: Integer; // world color, background color, background color percent
+  end;
+
+(*
+GetWorldNumber
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    procedure GetWorldNumber;
+
+Get the world number
+
+.. note::
+
+    by sam
+
+Example:
+
+  .. code-block:: pascal
+*)
+function GetWorldNumber(box: TBox; color, bcolor, percent: Integer) : Integer;
+var
+  tpa: TPointArray;
+  txt: String;
+begin
+  // group background color match, e.g. : member ~= clYellow, 25% or more
+  FindColorsTolerance(tpa, bcolor, box.X1, box.Y1, box.X2, box.Y2, 10);
+  if (Length(tpa) * 100 / Length(TPAFromBox(box))) > percent then
+  begin
+    txt := GetNumbers(GetTextAtEx(box.X1 - 5, box.Y1 - 5, box.X2 + 5, box.Y2 + 5, 0, 5, 0, color, 10, 'UpChars07'));
+    if length(txt) > 0 then
+    begin
+      result := StrToInt(GetNumbers(txt));
+    end;
+  end;
+  //WriteLn('world number info : ' + toStr(box) + ' , [' + toStr(color) + ',' + toStr(bcolor) + ',' + toStr(percent) + '] , [' + toStr((Length(tpa) * 100 / Length(TPAFromBox(box)))) + ' => ' + toStr(result) + ']');
+end;
+
+
+(*
+GetWorldNumbers
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    procedure GetWorldNumbers;
+
+Get the world numbers
+
+.. note::
+
+    by sam
+
+Example:
+
+  .. code-block:: pascal
+*)
+function GetWorldNumbers(boxes : TBoxArray; colors: Array of TWorldColor) : TIntegerArray;
+var
+  bL,tL,i,j,w: Integer;
+  tc: TWorldColor;
+begin
+  tL := Length(colors) -1;
+  bL := Length(boxes);
+  setLength(result, bL);
+  for i := 0 to (bL - 1) do
+  begin
+    for j := 0 to tL do
+    begin
+      tc := colors[j];
+      w := GetWorldNumber(boxes[i], tc.color, tc.bcolor, tc.percent);
+      if w > 0 then
+      begin
+        result[i] := w;
+        break;
+      end;
+    end;
+  end;
+  //WriteLn('worlds total : ' + toStr(length(Result)) + ', worlds numbers info : ' + toStr(Result));
+end;
+
+(*
+IsWorldFull
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    function IsWorldFull;
+
+Check world is full
+
+.. note::
+
+    by sam
+
+Example:
+
+  .. code-block:: pascal
+*)
+function IsWorldFull(tb : TBox) : Boolean;
+var
+  txt: String;
+begin
+  txt := GetTextAtExWrap(tb.x1, tb.y1, tb.x2, tb.y2, 0, 4, 2, clWhite, 10, 'StatChars07');
+  result:= arrinstr(['FULL','ENLL','FNLL','EULL'],txt);
+  //WriteLn('world stats : ' + toStr(txt) + ', full : ' + toStr(result));
+end;
+
+function WorldInit(var w: TIntegerArray; var wb : TBoxArray; colors: Array of TWorldColor) : Boolean;
+begin
+  wb := GridColorBox([clBlack], [5], IntToBox(0, 25, 764, 502));
+  w := GetWorldNumbers(wb, colors);
+  //WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
+end;
+
+(*
+QuickWorldScreen
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    function QuickWorldScreen;
+
+.. note::
+
+    by sam
+
+Example:
+
+  .. code-block:: pascal
+*)
+function QuickWorldScreen(): Boolean;
+var
+  x, y: Integer;
+begin
+  Result := FindTextEx(x, y, ['Current world', 'Loading'], [UpChars07], 555, 205, 710, 225);
+end;
+
+(*
+QuickWorldClose
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    function QuickWorldClose;
+
+.. note::
+
+    by sam
+
+Example:
+
+  .. code-block:: pascal
+*)
+function QuickWorldClose(): Boolean;
+begin
+  if QuickWorldScreen Then
+  begin
+    Mose(725, 215, 2, 2, True);
+    Repeat
+      wat(50, 100);
+    Until Not QuickWorldScreen;
+  end;
+  Result := True;
+end;

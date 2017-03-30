@@ -1,0 +1,80 @@
+(*
+Login
+====
+
+Supporting world functions.
+
+.. contents::
+
+*)
+
+function LoggedIn: Boolean; override;
+begin
+  //White text on Report Abuse Button
+  result := (GetColor(445, 489) = 16777215);
+end;
+
+function RSReady: boolean; override;
+var
+  t : integer;
+begin
+  result := (LoggedIn) Or (LobbyScreen) Or (WorldScreen);
+  if result then exit;
+
+  if not result then
+  begin
+    t := GetSystemTime() + 120000;
+    while GetSystemTime < t do
+    begin
+      result := (GetColor(31, 488) = 16777215);
+      if result then
+      begin
+        SetAudioOff();
+        exit;
+      end;
+      wait(20+random(10));
+    end;
+  end;
+
+  Writeln('Could not start up Old School RuneScape or RSReady was not detected!');
+  TerminateScript;
+end;
+
+function LogMeOut: Boolean;
+var
+  T: integer;
+begin
+  result := not loggedin;
+  if result then
+    exit;
+
+  if not gametab(tab_logout) then
+    exit;
+
+  if QuickWorldScreen then QuickWorldClose;
+
+  Mose(640, 420, 20, 2, True);
+
+  repeat
+    wait(RandomRange(400,500));
+  until (not loggedin) Or LobbyScreen;
+
+  result := true;
+end;
+
+function LobbyLogin(): Boolean;
+var
+i: Integer;
+Begin
+  if LobbyScreen then
+  begin
+    //WriteLn('LobbyScreen shows to LobbyLogin ...');
+    MouseBox(WDx1, WDy1, WDx2, WDy2, mouse_Left); //Click To Play
+    i := 0;
+    repeat
+      i := i+1;
+      Wait(100 + Random(100));
+    until (LoggedIn) or (i > 30);
+  end;
+  Result := True;
+end;

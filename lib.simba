@@ -1,0 +1,67 @@
+(*
+Lib
+====
+
+Supporting grid functions.
+
+.. contents::
+
+*)
+
+{$ifdef SRL5}
+
+procedure Wat(WAIT1, WAIT2: Integer);
+begin
+  Wait(RandomRange(WAIT1, WAIT2));
+end;
+
+procedure MMose(X, Y, Xr, Yr: Integer);
+Begin
+  MMouse(X + RandomRange(-Xr, Xr), Y + RandomRange(-Yr, Yr), 0, 0);
+End;
+
+procedure Mose(X, Y, Xr, Yr: Integer; Button: Variant);
+var
+  B, C: Integer;
+  iButton: Integer;
+begin
+  MMose(X, Y, Xr, Yr);
+  Wat(75, Round(75 * 1.5));
+  if (varType(button) = varBoolean) then
+  begin
+    if (button) then
+      iButton := mouse_left
+    else
+      iButton := mouse_right;
+  end else
+    iButton := button;
+  if (iButton = mouse_move) then Exit; { we aren't actually clicking! }
+  GetMousePos(B, C);
+  HoldMouse(B, C, iButton);
+  Wat(75, 100);
+  GetMousePos(B, C);
+  ReleaseMouse(B, C, iButton);
+  Wat(75, Round(75 * 1.5));
+end;
+
+function DoCondition(TimeOut, WaitPer: Integer; Funct: function: Boolean; Condition: function: Boolean; Normal: Boolean): Boolean;
+var
+  T: Integer;
+  B: Boolean;
+begin
+  T := GetSystemTime + TimeOut;
+  repeat
+    Funct();
+    B := Condition();
+    result := ((Normal and B) or (not (Normal or B)))
+    if result then exit;
+    Wait(RandomRange(WaitPer, Round(WaitPer * 1.5)));
+  until (GetSystemTime > T);
+end;
+
+{$i SRL-OSR/ws/array.simba}
+{$i SRL-OSR/ws/grid.simba}
+{$i SRL-OSR/ws/world.simba}
+{$i SRL-OSR/ws/login.simba}
+
+{$endif}
