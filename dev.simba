@@ -14,64 +14,89 @@ program SudokuSolver;
 {$I SRL-OSR/SRL/misc/debug.SIMBA}
 {$I SRL-OSR/ws/lib.SIMBA}
 
-function WorldColorWriter(colors : Array of TWorldColor) : String;
-var
-  i : Integer;
-  s : TStringArray;
-  wc : TWorldColor;
+function WorldColorProduce() : Array of TWorldColor;
 begin
-  setLength(s, Length(colors));
-
-  for i := low(colors) to high(colors) do
-  begin
-    wc := colors[i];
-    s[i] := toStr(wc.name) + '=' + toStr(wc.color) + ',' + toStr(wc.bcolor) + ',' + toStr(wc.percent);
-  end;
-  result := implode('|', s);
-end;
-
-procedure WorldColorProduce();
-var
-  colors : Array of TWorldColor;
-begin
-  setLength(colors, 4);
+  setLength(result, 4);
   //
-  with colors[0] do
+  with result[0] do
   begin
-    name        := 'member';
+    group       := 'member';
     color       := clBlack;
     bcolor      := 3628149;
     percent     := 3;
   end;
   //
-  with colors[1] do
+  with result[1] do
   begin
-    name        := 'free';
+    group       := 'free';
     color       := clBlack;
     bcolor      := 11513775;
     percent     := 3;
   end;
   //
-  with colors[2] do
+  with result[2] do
   begin
-    name        := 'pvp';
+    group       := 'pvp';
     color       := clBlack;
     bcolor      := 3618727;
     percent     := 3;
   end;
   //
-  with colors[3] do
+  with result[3] do
   begin
-    name        := 'dead';
+    group       := 'dead';
     color       := clRed;
     bcolor      := clBlack;
     percent     := 35;
   end;
-
-  Writeln(WorldColorWriter(colors));
 end;
 
+procedure WorldWriter(w: TWorldColor);
+var
+  sc : String;
+  tb : TBox;
+begin
+  tb := w.box;
+  sc := toStr(w.number);
+  //
+  WriteINI(sc, 'group', toStr(w.group), WORLD_DAT);
+  WriteINI(sc, 'x1', toStr(tb.x1), WORLD_DAT);
+  WriteINI(sc, 'y1', toStr(tb.y1), WORLD_DAT);
+  WriteINI(sc, 'x2', toStr(tb.x2), WORLD_DAT);
+  WriteINI(sc, 'y2', toStr(tb.y2), WORLD_DAT);
+end;
+
+procedure WorldProduce();
+var
+  T,i,j: Integer;
+  w: Array of TWorldColor;
+  wb: TBoxArray;
+  colors: Array of TWorldColor;
+  world: TIntegerArray;
+begin
+  T := GetSystemTime + RandomRange(10000, 12000);
+  repeat
+    Wat(500, 1000);
+    if OpenWorldScreen then OrderWorlds;
+    if GetSystemTime > T then break;
+  until WorldScreen;
+  //
+  wb := GridColorBox([clBlack], [5], IntToBox(0, 25, 764, 502));
+  w := GetWorldNumbers(wb, WorldColorProduce);
+  //
+  setLength(world, Length(w));
+  for i := low(w) to high(w) do
+  begin
+    WorldWriter(w[i]);
+    world[i] := w[i].number;
+  end;
+  WriteINI(WORLD_MAIN, 'world', intArrayToStr(world), WORLD_DAT);
+  //
+  WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
+end;
 
 begin
-  WorldColorProduce();
+  SetupSRL;
+  //
+  WorldProduce();
 end;

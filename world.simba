@@ -10,12 +10,15 @@ Supporting world functions.
 
 type
   TWorldColor = record
-    name : String;
+    group : String;                 // world group
+    number : Integer;                // world number
+    box : TBox;                      // world box
     color, bcolor, percent: Integer; // world color, background color, background color percent
   end;
 
-const
-  WORLD_COLOR_STRING = 'member=0,3628149,3|free=0,11513775,3|pvp=0,3618727,3|dead=255,0,35';
+var
+  WORLD_DAT := WS_ASSETS_PATH + '\world.dat';
+  WORLD_MAIN := 'main';
 
 (*
 GetWorldNumber
@@ -72,28 +75,59 @@ Example:
 
   .. code-block:: pascal
 *)
-function GetWorldNumbers(boxes : TBoxArray; colors: Array of TWorldColor) : TIntegerArray;
+function GetWorldNumbers(boxes : TBoxArray; colors: Array of TWorldColor) : Array of TWorldColor;
 var
   bL,tL,i,j,w: Integer;
   tc: TWorldColor;
+  tb: TBox;
 begin
   tL := Length(colors) -1;
   bL := Length(boxes);
   setLength(result, bL);
   for i := 0 to (bL - 1) do
   begin
+    tb := boxes[i];
     for j := 0 to tL do
     begin
       tc := colors[j];
-      w := GetWorldNumber(boxes[i], tc.color, tc.bcolor, tc.percent);
+      w := GetWorldNumber(tb, tc.color, tc.bcolor, tc.percent);
       if w > 0 then
       begin
-        result[i] := w;
+        result[i].group := tc.group;
+        result[i].number := w;
+        result[i].box := tb;
+        result[i].color := tc.color;
+        result[i].bcolor := tc.bcolor;
+        result[i].percent := tc.percent;
         break;
       end;
     end;
   end;
   //WriteLn('worlds total : ' + toStr(length(Result)) + ', worlds numbers info : ' + toStr(Result));
+end;
+
+procedure WorldReader(var w: TIntegerArray; var wb : TBoxArray; groups : TStringArray);
+var
+  i,wL: Integer;
+  sc: String;
+  wr: TIntegerArray;
+begin
+  wr := strToIntArray(ReadINI(WORLD_MAIN, 'world', WORLD_DAT));
+  //
+  wL := Length(wr);
+  setLength(w, wL);
+  setLength(wb, wL);
+  //
+  for i := 0 to (wL - 1) do
+  begin
+    sc := toStr(wr[i]);
+    if isStrInArr(ReadINI(sc, 'group', WORLD_DAT), false, groups) then
+    begin
+      w[i] := wr[i];
+      wb[i] := intToBox(strToInt(ReadINI(sc, 'x1', WORLD_DAT)), strToInt(ReadINI(sc, 'y1', WORLD_DAT)), strToInt(ReadINI(sc, 'x2', WORLD_DAT)), strToInt(ReadINI(sc, 'y2', WORLD_DAT)));
+    end;
+  end;
+  WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
 end;
 
 (*
@@ -121,40 +155,6 @@ begin
   txt := GetTextAtExWrap(tb.x1, tb.y1, tb.x2, tb.y2, 0, 4, 2, clWhite, 10, 'StatChars07');
   result:= arrinstr(['FULL','ENLL','FNLL','EULL'],txt);
   //WriteLn('world stats : ' + toStr(txt) + ', full : ' + toStr(result));
-end;
-
-function WorldColorReader(ws : String; names : TStringArray) : Array of TWorldColor;
-var
-  i : Integer;
-  c,a,b : TStringArray;
-begin
-  c := explode('|', ws);
-  for i := low(c) to high(c) do
-  begin
-    a := explode('=', c[i]);
-    if IsStrInArr(a[0], false, names) then
-    begin
-      b := explode(',', a[1]);
-      //
-      with result[i] do
-      begin
-        name        := a[0];
-        color       := strToInt(b[0]);
-        bcolor      := strToInt(b[1]);
-        percent     := strToInt(b[2]);
-      end;
-    end;
-  end;
-end;
-
-procedure WorldInit(var w: TIntegerArray; var wb : TBoxArray; names : TStringArray);
-begin
-  if Length(w) = 0 then
-  begin
-    wb := GridColorBox([clBlack], [5], IntToBox(0, 25, 764, 502));
-    w := GetWorldNumbers(wb, WorldColorReader(WORLD_COLOR_STRING, names));
-  end;
-  WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
 end;
 
 (*

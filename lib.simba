@@ -8,7 +8,8 @@ Supporting grid functions.
 
 *)
 
-{$ifdef SRL5}
+var
+  WS_ASSETS_PATH := IncludePath + '\SRL-OSR\ws\assets';
 
 procedure Wat(WAIT1, WAIT2: Integer);
 begin
@@ -63,5 +64,3 @@ end;
 {$i SRL-OSR/ws/grid.simba}
 {$i SRL-OSR/ws/world.simba}
 {$i SRL-OSR/ws/login.simba}
-
-{$endif}
