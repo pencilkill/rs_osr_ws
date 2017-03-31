@@ -10,8 +10,12 @@ Supporting world functions.
 
 type
   TWorldColor = record
+    name : String;
     color, bcolor, percent: Integer; // world color, background color, background color percent
   end;
+
+const
+  WORLD_COLOR_STRING = 'member=0,3628149,3|free=0,11513775,3|pvp=0,3618727,3|dead=255,0,35';
 
 (*
 GetWorldNumber
@@ -119,11 +123,38 @@ begin
   //WriteLn('world stats : ' + toStr(txt) + ', full : ' + toStr(result));
 end;
 
-function WorldInit(var w: TIntegerArray; var wb : TBoxArray; colors: Array of TWorldColor) : Boolean;
+function WorldColorReader(ws : String; names : TStringArray) : Array of TWorldColor;
+var
+  i : Integer;
+  c,a,b : TStringArray;
 begin
-  wb := GridColorBox([clBlack], [5], IntToBox(0, 25, 764, 502));
-  w := GetWorldNumbers(wb, colors);
-  //WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
+  c := explode('|', ws);
+  for i := low(c) to high(c) do
+  begin
+    a := explode('=', c[i]);
+    if IsStrInArr(a[0], false, names) then
+    begin
+      b := explode(',', a[1]);
+      //
+      with result[i] do
+      begin
+        name        := a[0];
+        color       := strToInt(b[0]);
+        bcolor      := strToInt(b[1]);
+        percent     := strToInt(b[2]);
+      end;
+    end;
+  end;
+end;
+
+procedure WorldInit(var w: TIntegerArray; var wb : TBoxArray; names : TStringArray);
+begin
+  if Length(w) = 0 then
+  begin
+    wb := GridColorBox([clBlack], [5], IntToBox(0, 25, 764, 502));
+    w := GetWorldNumbers(wb, WorldColorReader(WORLD_COLOR_STRING, names));
+  end;
+  WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
 end;
 
 (*
@@ -146,7 +177,7 @@ function QuickWorldScreen(): Boolean;
 var
   x, y: Integer;
 begin
-  Result := FindTextEx(x, y, ['Current world', 'Loading'], [UpChars07], 555, 205, 710, 225);
+  result := FindTextEx(x, y, ['Current world', 'Loading'], [UpChars07], 555, 205, 710, 225);
 end;
 
 (*
@@ -167,12 +198,12 @@ Example:
 *)
 function QuickWorldClose(): Boolean;
 begin
-  if QuickWorldScreen Then
+  if QuickWorldScreen then
   begin
     Mose(725, 215, 2, 2, True);
-    Repeat
+    repeat
       wat(50, 100);
-    Until Not QuickWorldScreen;
+    until not QuickWorldScreen;
   end;
-  Result := True;
+  result := True;
 end;

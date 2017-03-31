@@ -1,0 +1,77 @@
+(*
+Dev
+====
+
+Supporting world functions.
+
+.. contents::
+
+*)
+
+program SudokuSolver;
+{$DEFINE SMART}
+{$I SRL-OSR/SRL.SIMBA}
+{$I SRL-OSR/SRL/misc/debug.SIMBA}
+{$I SRL-OSR/ws/lib.SIMBA}
+
+function WorldColorWriter(colors : Array of TWorldColor) : String;
+var
+  i : Integer;
+  s : TStringArray;
+  wc : TWorldColor;
+begin
+  setLength(s, Length(colors));
+
+  for i := low(colors) to high(colors) do
+  begin
+    wc := colors[i];
+    s[i] := toStr(wc.name) + '=' + toStr(wc.color) + ',' + toStr(wc.bcolor) + ',' + toStr(wc.percent);
+  end;
+  result := implode('|', s);
+end;
+
+procedure WorldColorProduce();
+var
+  colors : Array of TWorldColor;
+begin
+  setLength(colors, 4);
+  //
+  with colors[0] do
+  begin
+    name        := 'member';
+    color       := clBlack;
+    bcolor      := 3628149;
+    percent     := 3;
+  end;
+  //
+  with colors[1] do
+  begin
+    name        := 'free';
+    color       := clBlack;
+    bcolor      := 11513775;
+    percent     := 3;
+  end;
+  //
+  with colors[2] do
+  begin
+    name        := 'pvp';
+    color       := clBlack;
+    bcolor      := 3618727;
+    percent     := 3;
+  end;
+  //
+  with colors[3] do
+  begin
+    name        := 'dead';
+    color       := clRed;
+    bcolor      := clBlack;
+    percent     := 35;
+  end;
+
+  Writeln(WorldColorWriter(colors));
+end;
+
+
+begin
+  WorldColorProduce();
+end;
