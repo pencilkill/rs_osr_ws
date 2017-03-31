@@ -90,7 +90,7 @@ begin
     WorldWriter(w[i]);
     world[i] := w[i].number;
   end;
-  WriteINI(WORLD_MAIN, 'world', intArrayToStr(world), WORLD_DAT);
+  WriteINI(WORLD_DAT_MAIN, 'world', intArrayToStr(world), WORLD_DAT);
   //
   WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
 end;

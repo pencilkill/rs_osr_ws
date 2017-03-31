@@ -18,7 +18,7 @@ type
 
 var
   WORLD_DAT := WS_ASSETS_PATH + '\world.dat';
-  WORLD_MAIN := 'main';
+  WORLD_DAT_MAIN := 'main';
 
 (*
 GetWorldNumber
@@ -112,7 +112,7 @@ var
   sc: String;
   wr: TIntegerArray;
 begin
-  wr := strToIntArray(ReadINI(WORLD_MAIN, 'world', WORLD_DAT));
+  wr := strToIntArray(ReadINI(WORLD_DAT_MAIN, 'world', WORLD_DAT));
   //
   wL := Length(wr);
   setLength(w, wL);
