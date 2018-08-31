@@ -200,7 +200,7 @@ function QuickWorldClose(): Boolean;
 begin
   if QuickWorldScreen then
   begin
-    Mose(725, 215, 2, 2, True);
+    Mouse(725, 215, 2, 2, mouse_left);
     repeat
       wat(50, 100);
     until not QuickWorldScreen;

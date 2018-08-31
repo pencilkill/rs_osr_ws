@@ -1,0 +1,75 @@
+(*
+World
+====
+
+Supporting world functions.
+
+.. contents::
+
+*)
+
+(*
+TabExists
+~~~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    function TabExists;
+
+Returns true if the gametab 'tab' exists.
+
+.. note::
+
+    by sam
+
+Example:
+
+  .. code-block:: pascal
+*)
+function TabExists(tab: integer): boolean; override;
+var
+  tmpCTS,X,Y: integer;
+begin
+  result := false;
+  if (not loggedIn) then
+    exit;
+
+  if (not inRange(tab, tab_Combat, tab_music)) then
+  begin
+    SRL_Warn('TabExists', 'Tab ' + toStr(Tab) + ' is not a valid tab number.', warn_AllVersions);
+    exit;
+  end;
+
+  // requires CTS 1, may result in false negatives if CTS 2
+  tmpCTS := getColorToleranceSpeed;
+  colorToleranceSpeed(1);
+
+  if (tab = TAB_INV) then
+    if (bankScreen) then
+    begin
+      colorToleranceSpeed(tmpCTS);
+      result := true;
+      exit;
+    end;
+
+  case tab of
+    //black outlines of inv buttons
+    TAB_COMBAT : Result:=(GetColor(535,177)=65536);
+    TAB_STATS  : Result:=(GetColor(565,187)=65536);
+    { No black outline on Quest button Jagex!?!? }
+    TAB_QUEST  : Result:=(FindColorTolerance(X,Y,15821910, 600, 175, 620, 196,81));
+    TAB_INV    : Result:=(GetColor(642,173)=65536);
+    TAB_EQUIP  : Result:=(GetColor(666,177)=65536);
+    TAB_PRAYER : Result:=(GetColor(706,175)=65536);
+    TAB_MAGIC  : Result:=(GetColor(730,188)=65536);
+    TAB_CLAN   : Result:=(GetColor(538,476)=65536);
+    TAB_FRIENDS: Result:=(GetColor(565,485)=65536);
+    TAB_IGNORE : Result:=(GetColor(598,485)=65536);
+    // modified by sam 2018-09-01
+    TAB_LOGOUT : Result:=(GetColor(632,482)=65536);
+    TAB_OPTIONS: Result:=(GetColor(680,472)=65536);
+    TAB_EMOTES : Result:=(GetColor(713,475)=65536);
+    TAB_MUSIC  : Result:=(GetColor(747,471)=65536);
+  end;
+  colorToleranceSpeed(tmpCTS);
+end;

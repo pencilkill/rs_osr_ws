@@ -11,7 +11,8 @@ Supporting world functions.
 function LoggedIn: Boolean; override;
 begin
   //White text on Report Abuse Button
-  result := (GetColor(445, 489) = 16777215);
+  result := ArrInStr(['Report', 'Rep', 'port', 'ort'], GetTextAtEx(420, 480, 490, 500, 0, 3, 15, clWhite, 10, StatChars07));
+  //
 end;
 
 function RSReady: boolean; override;
@@ -53,7 +54,7 @@ begin
 
   if QuickWorldScreen then QuickWorldClose;
 
-  Mose(640, 420, 20, 2, True);
+  Mouse(640, 420, 20, 2, mouse_left);
 
   repeat
     wait(RandomRange(400,500));
@@ -77,4 +78,370 @@ Begin
     until (LoggedIn) or (i > 30);
   end;
   Result := True;
+end;
+
+
+function LoginPlayerToLob: Boolean; override;
+var
+  c, t, w, typtmp : integer;
+  foundLogin : boolean;
+  p : TPoint;
+  TPA: TPointArray;
+  Boxes : TIntegerArray;
+begin
+  ActivateClient;
+  Result := ((LobbyScreen) or (LoggedIn));
+  if (Result) then
+    Exit;
+
+  if (not (Players[CurrentPlayer].Active)) then
+  begin
+    WriteLn('Player is not Active...');
+    if (AllPlayersInActive) then
+    begin
+      WriteLn('All players not active!');
+      Exit;
+    end;
+    NextPlayer(False);
+    Exit;
+  end;
+
+  T := GetSystemTime;
+  repeat
+    if (RSReady) then
+      Break;
+    if ((GetSystemTime - T) > 180000) then
+    begin
+      WriteLn('It has been 3 minutes and Runescape is not yet ready... Terminating.');
+      TerminateScript;
+    end;
+    Wait(RandomRange(1000, 2000));
+  until (False);
+  WriteLn('Welcome to Runescape.');
+
+  if (loggedIn) then
+    exit;
+
+  if Length(Players[CurrentPlayer].WorldInfo) > 0 then
+    SelectWorld(Players[CurrentPlayer].WorldInfo[0]);
+
+
+  //writeln(GetTextAtEx(325, 265, 430, 290, 1, 10, 5, WHITE_TEXT, 5, 'LoginChars'));
+
+  if (IsArrInStr(['Tryagain', 'Tryaga', 'ryagain'], GetTextAtEx(325, 265, 430, 290, 1, 10, 5, WHITE_TEXT, 5, 'LoginChars'))) then  //Try again
+  begin
+    MouseBox(325, 265, 430, 290, mouse_Left); //Try again
+    Wat(100, 150);
+  end;
+
+  //writeln(GetTextAtEx(408, 279, 518, 299, 1, 10, 5, WHITE_TEXT, 5, 'UpChars07'));
+
+  if (IsArrInStr(['ExistingUser', 'xistingU', 'istingUser'], GetTextAtEx(408, 279, 518, 299, 1, 10, 5, WHITE_TEXT, 5, 'UpChars07'))) then  //Existing User text
+  begin
+    WriteLn('Welcome to Runescape.');
+    MouseBox(395, 275, 529, 307, mouse_Left); //Existing User
+    Wat(100, 150);
+  end;
+
+  t := GetSystemTime() + 60000;
+  while GetSystemTime < t do
+  begin
+    c := CountColor(65535, 238, 235, 526, 270);
+    if c > 1 then
+    begin
+      foundLogin := true;
+      break;
+    end;
+    wait(500 + random(500));
+  end;
+  if not FoundLogin then
+  begin
+    writeln('Unable to detect login interface!');
+    exit;
+  end;
+
+  for W := 0 to 1 do
+  begin
+    if W = 0 then
+      Boxes := [315, 240, 435, 256]
+    else
+      Boxes := [349, 258, 435, 268];
+
+    t := (getSystemTime + (60000 * 2));
+
+    repeat
+      MouseBox(Boxes[0], Boxes[1], Boxes[2], Boxes[3], mouse_left);
+
+      typtmp := 0;
+      while (CountColor(LOGIN_TEXTCOLOUR, Boxes[0], Boxes[1], Boxes[2], Boxes[3]) > 0) do
+      begin
+        Inc(typtmp);
+        TypeByte(VK_BACK);
+        Wait(50+Random(50));
+      end;
+    until(not FindColors(TPA, LOGIN_TEXTCOLOUR, Boxes[0], Boxes[1], Boxes[2], Boxes[3]) or (getSystemTime > t));
+
+    Wait(100 + Random(200));
+
+    if W = 0 then
+    begin
+      WriteLn(Capitalize(Players[CurrentPlayer].Name));
+      TypeSend(Players[CurrentPlayer].Name);
+    end else
+      TypeSendEx(Players[CurrentPlayer].Pass, False);
+      MouseBox(240, 310, 365, 335, mouse_left);
+  end;
+
+                        {Check responses}
+
+  T := GetSystemTime;
+  repeat
+    result := lobbyScreen or loggedin;
+    if result then
+      break;
+
+    if (GetSystemTime - t > 60000) then
+    begin
+      result := false;
+      writeln('failed logging into lobby');
+      exit;
+    end;
+
+    // so the lobby appears (gets rid of black screen)
+    if not lobbyScreen then
+    begin
+      wait(1000+random(1000));
+      continue;
+    end;
+  until (Result);
+
+  TakeIPScreen();
+end;
+
+function LoginPlayer: Boolean; override;
+var
+  RetryLogin: Boolean;
+  t, w, i: integer;
+  Actions: TVariantArray;
+  Attempts: LongInt;
+  p: TPoint;
+  //ATPA: T2dPointArray;
+  TPA: TPointArray;
+  Boxes : TIntegerArray;
+  //B: TBox;
+label
+  ProcStart;
+begin
+  ActivateClient;
+
+  if (LoggedIn) then Exit;
+
+  Wait(100 + Random(200));
+  TypeByte(vk_Escape);
+  Wait(200 + Random(200));
+
+         {Check for lobby screen already open/ already logged in}
+
+  Result := ((LobbyScreen) or (LoggedIn));
+  if (Result) then Exit;
+
+                       {Check for active player.}
+
+  if (not (Players[CurrentPlayer].Active)) then
+  begin
+    WriteLn('Player is not Active...');
+    if (AllPlayersInActive) then
+    begin
+      WriteLn('All players not active!');
+      Exit;
+    end;
+    NextPlayer(False);
+    Exit;
+  end;
+
+               {Wait for the client to finish loading.}
+
+  T := GetSystemTime;
+  repeat
+    if (RSReady) then
+      Break;
+    if ((GetSystemTime - T) > 180000) then
+    begin
+      WriteLn('It has been 3 minutes and Runescape is not yet ready... Terminating.');
+      TerminateScript;
+    end;
+    Wait(RandomRange(1000, 2000));
+  until (False);
+
+  //writeln(GetTextAtEx(325, 265, 430, 290, 1, 10, 5, WHITE_TEXT, 5, 'LoginChars'));
+
+  if (IsArrInStr(['Tryagain', 'Tryaga', 'ryagain'], GetTextAtEx(325, 265, 430, 290, 1, 10, 5, WHITE_TEXT, 5, 'LoginChars'))) then  //Try again
+  begin
+    MouseBox(325, 265, 430, 290, mouse_Left); //Try again
+    Wat(100, 150);
+  end;
+
+  //writeln(GetTextAtEx(408, 279, 518, 299, 1, 10, 5, WHITE_TEXT, 5, 'UpChars07'));
+
+  if (IsArrInStr(['ExistingUser', 'xistingU', 'istingUser'], GetTextAtEx(408, 279, 518, 299, 1, 10, 5, WHITE_TEXT, 5, 'UpChars07'))) then  //Existing User text
+  begin
+    WriteLn('Welcome to Runescape.');
+    MouseBox(395, 275, 529, 307, mouse_Left); //Existing User
+    Wat(100, 150);
+  end;
+
+  if Length(Players[CurrentPlayer].WorldInfo) > 0 then
+    SelectWorld(Players[CurrentPlayer].WorldInfo[0]);
+  ProcStart:
+                       {Type in username and pass}
+
+  if (loggedIn) then
+    exit;
+
+  for W:= 0 to 1 do
+  begin
+    if W = 0 then
+      Boxes:= [315, 244, 435, 255]
+    else
+      Boxes:= [349, 258, 435, 268];
+
+    t := (getSystemTime + (60000 * 2));
+    repeat
+      MouseBox(Boxes[0], Boxes[1], Boxes[2], Boxes[3], mouse_left);
+
+      while (CountColor(LOGIN_TEXTCOLOUR, Boxes[0], Boxes[1], Boxes[2], Boxes[3]) > 0) do
+      begin
+        TypeByte(VK_BACK);
+        Wait(50+Random(50));
+      end;
+    until(not FindColors(TPA, LOGIN_TEXTCOLOUR, Boxes[0], Boxes[1], Boxes[2], Boxes[3]) or (getSystemTime > t));
+
+    Wait(100 + Random(200));
+    if W = 0 then
+    begin
+      WriteLn(Capitalize(Players[CurrentPlayer].Name));
+      TypeSend(Players[CurrentPlayer].Name);
+    end else
+    begin
+      TypeSendEx(Players[CurrentPlayer].Pass, False);
+      MouseBox(240, 310, 365, 335, mouse_Left); //Login
+      end;
+  end;
+                        {Check responses}
+
+  T := GetSystemTime;
+  repeat
+    // so the lobby appears (gets rid of black screen)
+    if (countColorTolerance(clBlack, 0, 0, 500, 500, 20) > 245000) then
+    begin
+      wait(2000 + random(1500));
+      mouseBox(0, 0, 750, 490, mouse_Move);
+    end;
+
+    SetLength(Actions, 0);
+
+    if ((GetSystemTime - T) > 60000) then
+      Actions :=       ['One minute has passed... Debug: ' + ToStr(CountColor(LOGIN_STATUSCOLOUR, 224, 190, 532, 250)),              0,    5,    'PlayerFalse',   'Login Failed']
+    else
+    //writeln(CountColor(LOGIN_STATUSCOLOUR, 224, 190, 532, 250));
+    case (CountColor(LOGIN_STATUSCOLOUR, 224, 190, 532, 250)) of //text colour points
+                        // WriteLn Error                  Wait for   Retrys     Action      Player[CurrentPlayer].Loc
+      1693: Actions := ['Invalid Username / Password',           0,    2,    'Terminate',   'Wrong User/Pass'];   //Updated
+      1539: Actions := ['Your account has been disabled',        0,    0,    'Terminate',   'Acc Disabled'];      //Updated
+      2325: Actions := ['Your account is already logged in',  5000,    5,    'PlayerTrue',    'Already logged in']; //Updated
+      1573: Actions := ['Not a Members Account',                 0,    1,    'Terminate',    ''];                  //Updated
+       492: Actions := ['Error Connecting.',                 20000,    9,    'Terminate',     'Error Connecting'];  //Updated
+      1721: Actions := ['Too many incorrect logins.',    5 * 60000,    2,    'PlayerTrue',   'Too many logins'];   //Updated
+       906: Actions := ['This world is full.',                5000,   10,    'PlayerTrue',   'World is full'];     //Updated
+      1136: Actions := ['Runescape has been updated.',           0,    0,    'RSUpdate',      'RS Updated'];
+       777: Actions := ['Login limit exceeded.',             20000,   10,    '',              'Waiting for login.'];
+      1700: Actions := ['You will need a members account to login to this world. Please subscribe, or use a different world.', 0, 0, 'Terminate', 'Acc Disabled'];  //Updated
+    end;
+                             {Respond}
+
+    if (Length(Actions) > 0) then
+    begin
+      WriteLn(Actions[0]);
+      if (Actions[0] <> 'Not a Members Account') then
+      begin
+        Wait(1000 + Random(500));
+      end;
+      Wait(Actions[1] + Random(100));
+      if (Actions[2] <> 0) then
+        if (Attempts < Actions[2]) or (Actions[2] = -1) then
+        begin
+          if (Actions[0] = 'Not a Members Account') then
+          begin
+            Players[CurrentPlayer].Member := False;
+            if (Length(Players[CurrentPlayer].WorldInfo) > 0) then
+              Players[CurrentPlayer].WorldInfo[0] := False;
+            MouseBox(267, 321, 496, 350, mouse_left); //Play free game instead button TODO:Check if this is needed
+            Wait(3000 + Random(2000));
+            Result := True;
+            Exit;
+          end;
+          RetryLogin := True;
+          Wait(2000 + Random(1000));
+          Break;
+        end;
+      if (Actions[4] <> '') then
+        Players[CurrentPlayer].Loc := Actions[4];
+      case Actions[3] of
+        'PlayerFalse': NextPlayer(False);
+
+        'PlayerTrue':
+          begin
+            //LeaveLobby();
+            NextPlayer(True);
+          end;
+
+        'Terminate': TerminateScript;
+
+        'RSUpdate':
+          begin
+            if SRL_HasProc(srl_OnRSUpdate) then
+            begin
+              case actions[0] of
+                'Runescape has been updated.':
+                  begin
+                    Writeln('Runescape has been updated! Waiting 5 minutes to restart SMART!');
+                    Wait(300000);
+                  end;
+              end;
+              SRL_Procs[srl_OnRSUpdate]();
+              Exit;
+            end;
+            Writeln('Runescape has been updated! Please restart Simba.');
+            TerminateScript;
+          end;
+      end;
+      Exit;
+    end;
+    Wait(100);
+    Result := (LobbyScreen) or (LoggedIn);
+  until (Result);
+
+  TakeIPScreen();
+
+  if (LobbyScreen) then
+  begin
+    MouseBox(WDx1, WDy1, WDx2, WDy2, mouse_Left); //Click To Play
+    i := 0;
+    repeat
+      i := i+1;
+      Wait(100 + Random(100));
+    until (LoggedIn) or (i > 30);
+  end;
+
+  Wait(100 + Random(100));
+
+                     {Back to main screen if needed}
+
+  if (RetryLogin) then
+  begin
+    RetryLogin := False;
+    Inc(Attempts);
+    goto ProcStart;
+  end;
+
 end;

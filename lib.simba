@@ -21,13 +21,13 @@ Begin
   MMouse(X + RandomRange(-Xr, Xr), Y + RandomRange(-Yr, Yr), 0, 0);
 End;
 
-procedure Mose(X, Y, Xr, Yr: Integer; Button: Variant);
+procedure Mose(X, Y, Xr, Yr: Integer; MouseWait: Integer; MouseWaitMultiplier: Double; Button: Variant);
 var
   B, C: Integer;
   iButton: Integer;
 begin
   MMose(X, Y, Xr, Yr);
-  Wat(75, Round(75 * 1.5));
+  Wat(MouseWait, Round(MouseWait * MouseWaitMultiplier));
   if (varType(button) = varBoolean) then
   begin
     if (button) then
@@ -39,10 +39,10 @@ begin
   if (iButton = mouse_move) then Exit; { we aren't actually clicking! }
   GetMousePos(B, C);
   HoldMouse(B, C, iButton);
-  Wat(75, 100);
+  Wat(MouseWait, Round(MouseWait * MouseWaitMultiplier));
   GetMousePos(B, C);
   ReleaseMouse(B, C, iButton);
-  Wat(75, Round(75 * 1.5));
+  Wat(MouseWait, Round(MouseWait * MouseWaitMultiplier));
 end;
 
 function DoCondition(TimeOut, WaitPer: Integer; Funct: function: Boolean; Condition: function: Boolean; Normal: Boolean): Boolean;
@@ -64,3 +64,4 @@ end;
 {$i SRL-OSR/ws/grid.simba}
 {$i SRL-OSR/ws/world.simba}
 {$i SRL-OSR/ws/login.simba}
+{$i SRL-OSR/ws/gametab.simba}
