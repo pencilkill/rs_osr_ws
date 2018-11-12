@@ -106,28 +106,48 @@ begin
   //WriteLn('worlds total : ' + toStr(length(Result)) + ', worlds numbers info : ' + toStr(Result));
 end;
 
-procedure WorldReader(var w: TIntegerArray; var wb : TBoxArray; groups : TStringArray);
+procedure WorldReader(var w: TIntegerArray; var wb : TBoxArray; groups : TStringArray; excludes: TIntegerArray = []);
 var
-  i,wL: Integer;
+  b: Boolean;
+  i,j, k: Integer;
   sc: String;
   wr: TIntegerArray;
 begin
   wr := strToIntArray(ReadINI(WORLD_DAT_MAIN, 'world', WORLD_DAT));
+  //WriteLn('worlds total : ' + toStr(length(wr)) + ', worlds numbers info : ' + toStr(wr) + ', excludes : ' + toStr(excludes));
   //
-  wL := Length(wr);
-  setLength(w, wL);
-  setLength(wb, wL);
+  setLength(w, Length(wr));
+  setLength(wb, Length(wr));
   //
-  for i := 0 to (wL - 1) do
+  for i := 0 to High(wr) do
   begin
-    sc := toStr(wr[i]);
-    if isStrInArr(ReadINI(sc, 'group', WORLD_DAT), false, groups) then
+    //
+    b := (wr[i] > 0);
+    if b then
     begin
-      w[i] := wr[i];
-      wb[i] := intToBox(strToInt(ReadINI(sc, 'x1', WORLD_DAT)), strToInt(ReadINI(sc, 'y1', WORLD_DAT)), strToInt(ReadINI(sc, 'x2', WORLD_DAT)), strToInt(ReadINI(sc, 'y2', WORLD_DAT)));
+      for k := 0 to High(excludes) do
+      begin
+        if excludes[k] = wr[i] then
+        begin
+          b := false;
+          break;
+        end;
+      end;
+    end;
+    //
+    if b then
+    begin
+      sc := toStr(wr[i]);
+      if isStrInArr(ReadINI(sc, 'group', WORLD_DAT), false, groups) then
+      begin
+        w[j] := wr[i];
+        wb[j] := intToBox(strToInt(ReadINI(sc, 'x1', WORLD_DAT)), strToInt(ReadINI(sc, 'y1', WORLD_DAT)), strToInt(ReadINI(sc, 'x2', WORLD_DAT)), strToInt(ReadINI(sc, 'y2', WORLD_DAT)));
+        j := j + 1;
+      end;
     end;
   end;
-  WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
+  setLength(w, j);
+  setLength(wb, j);
 end;
 
 (*

@@ -94,7 +94,7 @@ begin
   end;
   WriteINI(WORLD_DAT_MAIN, 'world', intArrayToStr(world), WORLD_DAT);
   //
-  //WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
+  WriteLn('worlds total : ' + toStr(length(w)) + ', worlds numbers info : ' + toStr(w));
 end;
 
 begin

@@ -60,8 +60,8 @@ begin
   until (GetSystemTime > T);
 end;
 
-{$i SRL-OSR/ws/array.simba}
-{$i SRL-OSR/ws/grid.simba}
-{$i SRL-OSR/ws/world.simba}
-{$i SRL-OSR/ws/login.simba}
-{$i SRL-OSR/ws/gametab.simba}
+{$i SRL-OSR/ws/lib/array.simba}
+{$i SRL-OSR/ws/lib/grid.simba}
+{$i SRL-OSR/ws/lib/world.simba}
+{$i SRL-OSR/ws/lib/login.simba}
+{$i SRL-OSR/ws/lib/gametab.simba}
