@@ -356,6 +356,8 @@ begin
       1136: Actions := ['Runescape has been updated.',           0,    0,    'RSUpdate',      'RS Updated'];
        777: Actions := ['Login limit exceeded.',             20000,   10,    '',              'Waiting for login.'];
       1700: Actions := ['You will need a members account to login to this world. Please subscribe, or use a different world.', 0, 0, 'Terminate', 'Acc Disabled'];  //Updated
+      863: Actions := ['Please enter your account...',             5000,   2,    '',              'Waiting for login cause crash.'];
+      1037: Actions := ['You need total skill of xxx to enter this world ....',             50000,   10,    '',              'World requires many skills.'];
     end;
                              {Respond}
 
