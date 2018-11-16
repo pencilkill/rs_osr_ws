@@ -1,0 +1,43 @@
+(*
+Worldswitcher
+=============
+
+The Worldswitcher include contains all kinds of functions to control the built-in RS world switcher.
+
+.. contents::
+
+*)
+
+(*
+CurrentWorldLS
+~~~~~~~~~~~~~~
+
+.. code-block:: pascal
+
+    function CurrentWorldLS: integer;
+
+Returns the current world at the login screen
+
+.. note::
+
+  by Ashaman88
+
+Example:
+
+.. code-block:: pascal
+
+*)
+function CurrentWorldLS: integer; override;
+var
+  txt :  String;
+  T: Integer;
+begin
+  T := GetSystemTime + RandomRange(10000, 12000);
+  repeat
+    txt := GetTextAtExWrap(16, 480, 95, 494, 0, 3, 2, 16777215, 2, 'StatChars07')
+    if GetSystemTime > T then break;
+  until not isStrInArr(txt, False, ['Loading', 'Load']);
+
+  txt := GetTextAtExWrap(61, 465, 88, 480, 0, 5, 2, 16777215, 2, 'UpChars07');
+  result := strToIntDef(txt, 0);
+end;
